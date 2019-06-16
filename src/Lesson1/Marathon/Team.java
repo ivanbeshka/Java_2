@@ -1,6 +1,5 @@
 package Lesson1.Marathon;
 
-import Lesson1.Marathon.obstacle.Course;
 import Lesson1.Marathon.obstacle.Marathon;
 import Lesson1.Marathon.obstacle.Wall;
 import Lesson1.Marathon.obstacle.Water;
@@ -10,10 +9,7 @@ public class Team {
     Competitor[] competitor;
 
     public Team(String dogName, String catName, String human1Name, String human2Name) {
-        competitor[0] = new Dog(dogName);
-        competitor[1] = new Cat(catName);
-        competitor[2] = new Human(human1Name);
-        competitor[3] = new Human(human2Name);
+        competitor = new Competitor[]{new Dog(dogName),new Cat(catName), new Human(human1Name), new Human(human2Name)};
     }
 
 
@@ -38,6 +34,7 @@ public class Team {
         }
 
     }
+
 
     public boolean isOnDistance() {
         int allOnDist = 0;
