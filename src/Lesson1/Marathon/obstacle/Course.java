@@ -8,10 +8,13 @@ public class Course{
     Obstacle[] obstacle;
 
     public Course(int waterLength, int wallHeight, int marathonLength) {
-        obstacle[0] = new Water(waterLength);
-        obstacle[1] = new Wall(wallHeight);
-        obstacle[2] = new Marathon(marathonLength);
+       obstacle = new Obstacle[]{new Water(waterLength),new Wall(wallHeight),new Marathon(marathonLength)};
     }
 
+    public void doIt(Team team){
+        team.jump((Wall) obstacle[1]);
+        team.run((Marathon) obstacle[2]);
+        team.swim((Water) obstacle[0]);
+    }
 
 }
