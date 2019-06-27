@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane alignment="center" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Lesson4.sample.Controller">
+<VBox>
+    <TextArea fx:id="textArea" />
+    <HBox>
+        <TextField fx:id="textField" accessibleRole="BUTTON" alignment="BOTTOM_CENTER" minWidth="250" onAction="#textFieldOnAction" />
+        <Button fx:id="btnEnter" text="Enter" onAction="#enterClicked"/>
+    </HBox>
+
+</VBox>
+
+</StackPane>
