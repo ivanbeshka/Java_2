@@ -10,7 +10,7 @@ public class ClientHandler {
     private Socket socket;
     DataOutputStream out;
     DataInputStream in;
-    String nick;
+    private String nick;
 
     public ClientHandler(Server server, Socket socket) {
         try {
@@ -21,7 +21,27 @@ public class ClientHandler {
 
             new Thread(() -> {
                 try {
+
+                    // для ослеживания времени на авторизацию
+
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(12000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        if(!server.isNickAuthorized(nick)){
+                            try {
+                                in.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
                     // цикл авторизации.
+
                     while (true) {
                         String str = in.readUTF();
                         if(str.startsWith("/auth")){
@@ -29,23 +49,29 @@ public class ClientHandler {
                             String newNick =
                                     AuthService.getNickByLoginAndPass(token[1],token[2]);
                             if(newNick != null){
-                                sendMsg("/authok");
-                                nick = newNick;
-                                server.subscribe(this);
-                                break;
+                                if(!server.isNickAuthorized(newNick)){
+                                    sendMsg("/authok "+newNick);
+                                    nick = newNick;
+                                    server.subscribe(this);
+                                    break;
+                                }else{
+                                    sendMsg("Учетная запись уже используется");
+                                }
                             }else {
                                 sendMsg("Неверный логин / пароль");
                             }
                         }
                     }
-
                     //Цикл для работы
                     while (true) {
                         String str = in.readUTF();
 
                         if(str.startsWith("/w")){
-                            String[] msgNick = str.split(" ");
-                            server.lMsg(msgNick);
+                            String[] msgNick = str.split(" ",3);
+                            server.broadcastMsg(msgNick[2],getNick(),msgNick[1]);
+                        }else{
+                            System.out.println(str);
+                            server.broadcastMsg(str,getNick());
                         }
 
                         if (str.equals("/end")) {
@@ -53,9 +79,6 @@ public class ClientHandler {
                             System.out.println("Клиент отключился");
                             break;
                         }
-
-                        System.out.println(str);
-                        server.broadcastMsg(nick + ": " +str);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

@@ -13,7 +13,6 @@ public class Server {
 
     public Server() throws SQLException {
         AuthService.connect();
-//        System.out.println(AuthService.getNickByLoginAndPass("login1","pass1"));
 
         ServerSocket server = null;
         Socket socket = null;
@@ -46,26 +45,59 @@ public class Server {
         }
     }
 
-    public void broadcastMsg(String str){
+    public void broadcastMsg(String str, String sender){
+        AuthService.addMessageToDB(sender,null,str,"0000");
+
         for (ClientHandler o: clients) {
-            o.sendMsg(str);
+            o.sendMsg(sender + ": "+ str);
         }
     }
 
-    public void lMsg(String [] strNick){
+
+    public void broadcastMsg(String str, String sender, String receiver){
+        AuthService.addMessageToDB(sender,receiver,str,"0000");
+
         for (ClientHandler o: clients) {
-            if(o.getNick() == strNick[1]){
-                String str = String.join(" ",strNick);
-                o.sendMsg(str);
+            if(o.getNick().equals(receiver) || o.getNick().equals(sender)){
+                o.sendMsg("private ["+ sender +" ] to [ "+receiver+" ] :"+ str);
             }
         }
     }
 
     public void subscribe(ClientHandler clientHandler){
         clients.add(clientHandler);
+        broadcastClientList();
+        clientHandler.sendMsg(
+                AuthService.getMessagesFromDBForNick(clientHandler.getNick())
+        );
     }
 
     public void unsubscribe(ClientHandler clientHandler){
         clients.remove(clientHandler);
+        broadcastClientList();
+    }
+
+    public boolean isNickAuthorized(String nick){
+        for (ClientHandler o: clients) {
+            if(o.getNick().equals(nick)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void broadcastClientList(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("/clientList ");
+
+        for (ClientHandler o: clients) {
+            sb.append(o.getNick()+" ");
+        }
+
+        String msg = sb.toString();
+
+        for (ClientHandler o: clients) {
+            o.sendMsg(msg);
+        }
     }
 }

@@ -1,13 +1,13 @@
 package Lesson7.Client;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -31,6 +31,12 @@ public class Controller {
     public PasswordField passwordField;
     @FXML
     public HBox bottomPanel;
+    @FXML
+    public ListView<String> clientList;
+
+    private Stage stage;
+
+    private String nick;
 
     private boolean isAuthorized;
 
@@ -48,11 +54,15 @@ public class Controller {
             upperPanel.setManaged(false);
             bottomPanel.setVisible(true);
             bottomPanel.setManaged(true);
+            clientList.setVisible(true);
+            clientList.setManaged(true);
         }else {
             upperPanel.setVisible(true);
             upperPanel.setManaged(true);
             bottomPanel.setVisible(false);
             bottomPanel.setManaged(false);
+            clientList.setVisible(false);
+            clientList.setManaged(false);
         }
     }
 
@@ -73,19 +83,37 @@ public class Controller {
                             String str = in.readUTF();
                             if (str.equals("/authok")) {
                                 setAuthorized(true);
+                                nick = str.split(" ")[1];
                                 break;
                             }
                             textArea.appendText(str +"\n");
                         }
+
+                        Platform.runLater(() ->{
+                            getStage().setTitle("Chat for "+ nick);
+                        } );
+
                         //цикл работы
                         while(true){
                             String str = in.readUTF();
-
-                            if (str.equals("/end")) {
-                                System.out.println("Клиент отключился");
-                                break;
+                            if (str.startsWith("/")){
+                                if (str.equals("/end")) {
+                                    System.out.println("Клиент отключился");
+                                    break;
+                                }
+                                if (str.startsWith("/clientList")) {
+                                    String[] tokens = str.split(" ");
+                                    //
+                                    Platform.runLater(()->{
+                                        clientList.getItems().clear();
+                                        for (int i = 1; i <tokens.length ; i++) {
+                                            clientList.getItems().add(tokens[i]);
+                                        }
+                                    });
+                                }
+                            }else {
+                                textArea.appendText(str +"\n");
                             }
-                            textArea.appendText(str +"\n");
                         }
                     }catch (IOException e) {
                         e.printStackTrace();
@@ -127,5 +155,18 @@ public class Controller {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void clickClientList(MouseEvent mouseEvent) {
+        String receiver = clientList.getSelectionModel().getSelectedItem();
+        textField.setText("/w "+receiver+" ");
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    public Stage getStage() {
+        return stage;
     }
 }
